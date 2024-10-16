@@ -5,59 +5,33 @@
  * @format
  */
 
-import React, {useEffect} from 'react';
-import {SafeAreaView, useColorScheme} from 'react-native';
-
-import {Colors} from 'react-native/Libraries/NewAppScreen';
-
-import {
-  closeDatabase,
-  createTables,
-  openDatabase,
-  printDbLocation,
-} from './src/utils/productManager';
-import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {CartScreen, ProductsScreen} from './src/screens';
-
-const Stack = createNativeStackNavigator();
+import React from 'react';
+import {FlatList, SafeAreaView, StyleSheet} from 'react-native';
+import {data} from './src/constants';
+import SwipableItem from './src/components/SwipableItem';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 
 function App(): React.JSX.Element {
-  useEffect(() => {
-    initializeDatabase();
-    return () => {
-      closeDatabase();
-    };
-  }, []);
-
-  // Initialize the database
-  const initializeDatabase = async () => {
-    try {
-      await openDatabase(); // Ensure the database is created/opened
-      await printDbLocation(); // Print the database location
-      await createTables(); // Create tables
-    } catch (error) {
-      console.log('Error initializing database:', error);
-    }
-  };
-
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    flex: 1,
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const renderSwipableItem = (dataItem: dataItem) => {
+    return <SwipableItem dataItem={dataItem} />;
   };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{headerShown: false}}>
-          <Stack.Screen name="Products" component={ProductsScreen} />
-          <Stack.Screen name="MyCart" component={CartScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </SafeAreaView>
+    <GestureHandlerRootView>
+      <SafeAreaView style={styles.container}>
+        <FlatList
+          data={data}
+          renderItem={({item}) => renderSwipableItem(item)}
+        />
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 
 export default App;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
