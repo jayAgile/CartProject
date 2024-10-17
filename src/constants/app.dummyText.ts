@@ -1,4 +1,4 @@
-export const data: dataItem[] = [
+export const data: ProductItem[] = [
   {
     id: 1,
     title: 'Product 1',

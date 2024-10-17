@@ -277,3 +277,67 @@ export const deleteAllProducts = async () => {
     );
   });
 };
+
+export const deleteProductById = async (productId: number) => {
+  if (!db) {
+    await openDatabase(); // Ensure the database is opened
+  }
+
+  db?.transaction(tx => {
+    // Delete from Product table
+    tx.executeSql(
+      'DELETE FROM Product WHERE product_id = ?',
+      [productId],
+      (tx, results) => {
+        console.log(
+          `Product with id ${productId} deleted successfully from Product table`,
+        );
+      },
+      (tx, error) => {
+        console.log(
+          'Error deleting product from Product table:',
+          error.message,
+        );
+      },
+    );
+
+    // Delete from Cart table
+    tx.executeSql(
+      'DELETE FROM Cart WHERE product_id = ?',
+      [productId],
+      (tx, results) => {
+        console.log(
+          `Product with id ${productId} deleted successfully from Cart table`,
+        );
+      },
+      (tx, error) => {
+        console.log('Error deleting product from Cart table:', error.message);
+      },
+    );
+  });
+};
+
+export const updateProduct = async (productId: number, newName: string) => {
+  if (!db) {
+    await openDatabase(); // Ensure the database is opened
+  }
+
+  db?.transaction(tx => {
+    // Update the product title in the Product table
+    tx.executeSql(
+      'UPDATE Product SET name = ? WHERE product_id = ?',
+      [newName, productId],
+      (tx, results) => {
+        console.log(
+          `Product name updated successfully for product id ${productId}`,
+        );
+      },
+      (tx, error) => {
+        console.log(
+          'Error updating product name in Product table:',
+          error.message,
+        );
+      },
+    );
+  });
+};

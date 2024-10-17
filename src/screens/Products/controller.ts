@@ -2,11 +2,16 @@ import {useEffect, useState} from 'react';
 
 import {
   deleteAllProducts,
+  deleteProductById,
   insertProductData,
   insertPromoCodeData,
   openDatabase,
 } from '../../utils/productManager';
-import {NavigationProp, useNavigation} from '@react-navigation/native';
+import {
+  NavigationProp,
+  useIsFocused,
+  useNavigation,
+} from '@react-navigation/native';
 
 interface UseProductsPops {
   products: ProductItem[];
@@ -19,6 +24,8 @@ interface UseProductsPops {
   deleteProduct: () => void;
   handleRefresh: () => void;
   navigateToMyCart: () => void;
+  onDelete: (productItem: ProductItem) => void;
+  onEdit: (productItem: ProductItem) => void;
 }
 
 /**
@@ -38,7 +45,8 @@ export const useProducts = (): UseProductsPops => {
   const [selectedProductList, setSelectedProductList] = useState<ProductItem[]>(
     [],
   );
-
+  // This hook returns `true` if the screen is focused, `false` otherwise
+  const isFocused = useIsFocused();
   // Usage example
   const addPromoCode = async () => {
     await insertPromoCodeData(
@@ -52,7 +60,10 @@ export const useProducts = (): UseProductsPops => {
     );
   };
 
-  const navigation = useNavigation<NavigationProp<{MyCart: {}}>>();
+  const navigation =
+    useNavigation<
+      NavigationProp<{MyCart: {}; EditProduct: {productItem: ProductItem}}>
+    >();
 
   // Fetch products from the database
   const fetchProducts = async () => {
@@ -127,8 +138,16 @@ export const useProducts = (): UseProductsPops => {
   };
 
   useEffect(() => {
-    fetchProducts(); // Fetch products when the component mounts
-  }, []);
+    if (isFocused) {
+      fetchProducts(); // Fetch products when the component mounts
+    }
+  }, [isFocused]);
+
+  // useEffect(() => {
+  //   if (isFocused) {
+  //     fetchProducts(); // Fetch products when the component mounts
+  //   }
+  // }, [isFocused]);
 
   // Handle refresh action
   const handleRefresh = () => {
@@ -144,6 +163,14 @@ export const useProducts = (): UseProductsPops => {
   const deleteProduct = async () => {
     await deleteAllProducts();
     fetchProducts();
+  };
+
+  const onDelete = async (productItem: ProductItem) => {
+    await deleteProductById(productItem.product_id);
+    await fetchProducts();
+  };
+  const onEdit = (productItem: ProductItem) => {
+    navigation.navigate('EditProduct', {productItem: productItem});
   };
 
   // Add selected products to the cart with total price calculation
@@ -183,6 +210,8 @@ export const useProducts = (): UseProductsPops => {
     products,
     productsInCart,
     selectedProductList,
+    onDelete,
+    onEdit,
     onAddToCartHandler,
     addProduct,
     deleteProduct,

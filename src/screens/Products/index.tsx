@@ -16,10 +16,14 @@ export const ProductsScreen = () => {
     deleteProduct,
     handleRefresh,
     navigateToMyCart,
+    onDelete,
+    onEdit,
   } = useProducts();
 
   const renderProductItem = ({item}: {item: ProductItem}) => (
     <ProductItem
+      onDeletePress={onDelete}
+      onEditPress={onEdit}
       productItem={item}
       selectedProductList={selectedProductList}
       onAddToCartPress={onAddToCartHandler}
