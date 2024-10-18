@@ -10,6 +10,7 @@
     "pod": "npx pod-install",
     "reset": "npx react-native start --reset-cache",
     "clean:android": "cd android && ./gradlew clean && cd ..",
+    "build:android": "cd android && ./gradlew clean && ./gradlew assembleRelease && open app/build/outputs/apk/production/release ",
     "test": "jest"
   },
   "dependencies": {
