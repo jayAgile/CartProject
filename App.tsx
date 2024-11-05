@@ -10,18 +10,12 @@ import {SafeAreaView, useColorScheme} from 'react-native';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 
-import {
-  closeDatabase,
-  createTables,
-  openDatabase,
-  printDbLocation,
-} from './src/utils/productManager';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {CartScreen, ProductsScreen} from './src/screens';
-import SwiperDemo from './src/screens/SwiperDemo';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
-import EditProduct from './src/screens/EditProduct';
+
+import {ChatList, ChatRoom, HomeScreen} from './src/screens';
+import {closeDatabase} from './src/utils/productManager';
+import {createTables, openDatabase} from './src/utils/chatManager';
 
 const Stack = createNativeStackNavigator();
 
@@ -36,8 +30,10 @@ function App(): React.JSX.Element {
   // Initialize the database
   const initializeDatabase = async () => {
     try {
+      // await openDatabase(); // Ensure the database is created/opened
       await openDatabase(); // Ensure the database is created/opened
-      await printDbLocation(); // Print the database location
+      // await printDbLocation(); // Print the database location
+      // await createTables(); // Create tables
       await createTables(); // Create tables
     } catch (error) {
       console.log('Error initializing database:', error);
@@ -53,15 +49,13 @@ function App(): React.JSX.Element {
 
   return (
     <SafeAreaView style={backgroundStyle}>
-      <GestureHandlerRootView>
-        <NavigationContainer>
-          <Stack.Navigator screenOptions={{headerShown: false}}>
-            <Stack.Screen name="Products" component={ProductsScreen} />
-            <Stack.Screen name="EditProduct" component={EditProduct} />
-            <Stack.Screen name="MyCart" component={CartScreen} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </GestureHandlerRootView>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{headerShown: false}}>
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="ChatList" component={ChatList} />
+          <Stack.Screen name="ChatRoom" component={ChatRoom} />
+        </Stack.Navigator>
+      </NavigationContainer>
     </SafeAreaView>
   );
 }
