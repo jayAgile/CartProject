@@ -76,7 +76,7 @@ export const useProducts = (): UseProductsPops => {
         tx.executeSql(
           'SELECT * FROM Product',
           [],
-          async (tx, results) => {
+          async (_tx, results) => {
             const productsArray = [];
             for (let i = 0; i < results.rows.length; i++) {
               productsArray.push(results.rows.item(i));
@@ -86,7 +86,7 @@ export const useProducts = (): UseProductsPops => {
             setLoading(false);
             setSelectedProductList([]);
           },
-          (tx, err) => {
+          (_tx, err) => {
             setError('Failed to fetch products');
             setLoading(false);
             console.log('Error fetching products:', err.message);
@@ -113,7 +113,7 @@ export const useProducts = (): UseProductsPops => {
            FROM Product 
            JOIN CART ON Product.product_id = Cart.product_id`, // Join with Cart table to fetch product details
           [],
-          (tx, results) => {
+          (_tx, results) => {
             console.log('results.rows.length', results.rows.length);
             const productsArray = [];
             for (let i = 0; i < results.rows.length; i++) {
@@ -123,7 +123,7 @@ export const useProducts = (): UseProductsPops => {
             setSelectedProductList(productsArray); // Update the state with product details
             // setLoading(false);
           },
-          (tx, err) => {
+          (_tx, err) => {
             setError('Failed to fetch products');
             // setLoading(false);
             console.log('Error fetching products:', err.message);
@@ -185,7 +185,7 @@ export const useProducts = (): UseProductsPops => {
           fetchFromCart();
           console.log(`Product ${product.name} added to cart`);
         },
-        (tx, error) => {
+        (_tx, error) => {
           console.log('Error adding product to cart:', error.message);
         },
       );
