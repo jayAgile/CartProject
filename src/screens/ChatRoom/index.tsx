@@ -3,6 +3,7 @@ import React, {useEffect, useState} from 'react';
 import {
   Button,
   FlatList,
+  KeyboardAvoidingView,
   StyleSheet,
   Text,
   TextInput,
@@ -114,7 +115,7 @@ export const ChatRoom = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container}>
       <Text style={styles.txtStyle}>{contactName}</Text>
       <FlatList
         data={messages}
@@ -142,7 +143,7 @@ export const ChatRoom = () => {
         style={styles.inputStyle}
       />
       <Button title="Send" onPress={sendMessage} />
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

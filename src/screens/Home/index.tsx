@@ -13,7 +13,7 @@ export const HomeScreen = () => {
     // Insert a new chat with placeholder data
     await db.executeSql(
       'INSERT INTO chats (contactName, lastMessage) VALUES (?, ?)',
-      ['New Contact', 'This is the first message'],
+      ['Test User', 'This is the first message'],
     );
 
     // Navigate to the Chat List screen to view the updated list
