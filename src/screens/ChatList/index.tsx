@@ -1,8 +1,4 @@
-import {
-  NavigationProp,
-  useIsFocused,
-  useNavigation,
-} from '@react-navigation/native';
+import {useIsFocused} from '@react-navigation/native';
 import React, {useEffect, useState} from 'react';
 import {Button, FlatList, StyleSheet, View} from 'react-native';
 import {ResultSet} from 'react-native-sqlite-storage';
