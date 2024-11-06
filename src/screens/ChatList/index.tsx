@@ -4,17 +4,14 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 import React, {useEffect, useState} from 'react';
-import {FlatList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import {openDatabase} from '../../utils/chatManager';
+import {Button, FlatList, StyleSheet, View} from 'react-native';
 import {ResultSet} from 'react-native-sqlite-storage';
+import {openDatabase} from '../../utils/chatManager';
+import ChatItem from './components/ChatItem';
 
 export const ChatList = () => {
   const [chats, setChats] = useState<any[]>([]);
   const isFocused = useIsFocused(); // Check if the screen is focused
-  const navigation =
-    useNavigation<
-      NavigationProp<{ChatRoom: {chatId: number; contactName: string}}>
-    >();
 
   useEffect(() => {
     if (isFocused) {
@@ -22,20 +19,48 @@ export const ChatList = () => {
     }
   }, [isFocused]);
 
+  const addNewChat = async () => {
+    // Open the database and insert a new chat
+    const db = await openDatabase();
+
+    // Insert a new chat with placeholder data
+    await db.executeSql('INSERT INTO chats (contactName) VALUES (?)', [
+      'Test User',
+    ]);
+
+    // Navigate to the Chat List screen to view the updated list
+    loadChats();
+  };
+
   const loadChats = async () => {
     try {
       const db = await openDatabase();
 
       db.transaction(tx => {
+        // Check if the "chats" table exists
         tx.executeSql(
-          'SELECT * FROM chats ORDER BY timestamp DESC',
+          "SELECT name FROM sqlite_master WHERE type='table' AND name='chats'",
           [],
-          (_, results: ResultSet) => {
-            const rows = results.rows.raw(); // Works with SQLite's results format
-            setChats(rows);
+          (_, result: ResultSet) => {
+            if (result.rows.length > 0) {
+              // If table exists, load the chats
+              tx.executeSql(
+                'SELECT * FROM chats ORDER BY timestamp DESC',
+                [],
+                (_, results: ResultSet) => {
+                  const rows = results.rows.raw(); // Extract rows
+                  setChats(rows);
+                },
+                error => {
+                  console.error('Error fetching chats:', error);
+                },
+              );
+            } else {
+              console.log("Table 'chats' does not exist.");
+            }
           },
           error => {
-            console.error('Error fetching chats:', error);
+            console.error('Error checking table existence:', error);
           },
         );
       });
@@ -44,28 +69,30 @@ export const ChatList = () => {
     }
   };
 
-  const navigateToChatRoom = (chatId: number, contactName: string) => {
-    navigation.navigate('ChatRoom', {chatId, contactName});
+  const renderHeaderComponent = () => {
+    return (
+      <View style={styles.container}>
+        <Button title="Add New Chat" onPress={addNewChat} />
+      </View>
+    );
   };
 
   return (
     <FlatList
       data={chats}
       keyExtractor={item => item.id.toString()}
-      renderItem={({item}) => (
-        <TouchableOpacity
-          onPress={() => navigateToChatRoom(item.id, item.contactName)}>
-          <View style={styles.itemContainer}>
-            <Text style={styles.fontweight}>{item.contactName}</Text>
-            <Text>{item.lastMessage}</Text>
-          </View>
-        </TouchableOpacity>
-      )}
+      renderItem={({item}) => <ChatItem item={item} isFocused={isFocused} />}
+      ListHeaderComponent={renderHeaderComponent}
     />
   );
 };
 
 const styles = StyleSheet.create({
-  itemContainer: {padding: 16},
-  fontweight: {fontWeight: 'bold'},
+  container: {
+    flex: 1,
+    marginTop: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  viewStyle: {marginVertical: 10},
 });

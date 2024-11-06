@@ -13,9 +13,12 @@ import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
-import {ChatList, ChatRoom, HomeScreen} from './src/screens';
-import {closeDatabase} from './src/utils/productManager';
-import {createTables, openDatabase} from './src/utils/chatManager';
+import {ChatList, ChatRoom} from './src/screens';
+import {
+  closeDatabase,
+  createTables,
+  openDatabase,
+} from './src/utils/chatManager';
 
 const Stack = createNativeStackNavigator();
 
@@ -51,7 +54,6 @@ function App(): React.JSX.Element {
     <SafeAreaView style={backgroundStyle}>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{headerShown: false}}>
-          <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="ChatList" component={ChatList} />
           <Stack.Screen name="ChatRoom" component={ChatRoom} />
         </Stack.Navigator>

@@ -1,4 +1,5 @@
 import NetInfo, {NetInfoState} from '@react-native-community/netinfo';
+import {RouteProp, useRoute} from '@react-navigation/native';
 import React, {useEffect, useState} from 'react';
 import {
   Button,
@@ -9,10 +10,12 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import {openDatabase} from '../../utils/chatManager';
-import {Transaction} from 'react-native-sqlite-storage';
 import {IcPending, IcSent} from '../../constants';
-import {RouteProp, useRoute} from '@react-navigation/native';
+import {Status} from '../../enum/common';
+import {
+  checkAndSendPendingMessages,
+  openDatabase,
+} from '../../utils/chatManager';
 
 export const ChatRoom = () => {
   const route =
@@ -25,23 +28,17 @@ export const ChatRoom = () => {
   const [input, setInput] = useState('');
 
   useEffect(() => {
-    NetInfo.addEventListener((state: NetInfoState) => {
-      setIsConnected(state.isConnected);
-    });
-    loadMessages();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
+      setIsConnected(state.isConnected);
+      loadMessages();
       if (state.isConnected) {
         console.log('Internet is available. Checking for pending messages...');
-        checkAndSendPendingMessages();
+        checkAndSendPendingMessages().then(message => {
+          return sendMessageToServer(message);
+        });
       }
     });
-
     return () => unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadMessages = async () => {
@@ -62,54 +59,31 @@ export const ChatRoom = () => {
     });
   };
 
-  const checkAndSendPendingMessages = async () => {
+  const sendMessageToServer = async (message: Message) => {
+    // If successful, update the status to "sent"
     const db = await openDatabase();
-
     db.transaction(tx => {
       tx.executeSql(
-        'SELECT * FROM messages WHERE status = ?',
-        ['pending'],
-        (txd, results) => {
-          const pendingMessages = results.rows.raw();
-
-          pendingMessages.forEach(async message => {
-            try {
-              // Attempt to send the message to the server
-              await sendMessageToServer(message, txd);
-            } catch (error) {
-              console.error('Failed to send message:', error);
-            }
-          });
+        "UPDATE messages SET status = 'sent' WHERE id = ?",
+        [message.id],
+        () => {
+          console.log(`Message ${message.id} status updated to sent`);
+          loadMessages();
         },
-        error => console.error('Error fetching pending messages:', error),
       );
     });
   };
 
-  const sendMessageToServer = async (message: Message, tx: Transaction) => {
-    // If successful, update the status to "sent"
-    tx.executeSql(
-      "UPDATE messages SET status = 'sent' WHERE id = ?",
-      [message.id],
-      () => {
-        console.log(`Message ${message.id} status updated to sent`);
-        loadMessages();
-      },
-    );
-  };
-
   const sendMessage = async () => {
+    if (input.length === 0) {
+      return;
+    }
     const db = await openDatabase();
-    const status = isConnected ? 'sent' : 'pending';
+    const status = isConnected ? Status.SENT : Status.PENDING;
     await db.executeSql(
       'INSERT INTO messages (chatId, sender, content, status) VALUES (?, ?, ?, ?)',
       [chatId, 'me', input, status],
     );
-
-    if (isConnected) {
-      // Sync with server or send message API here
-    }
-
     setInput('');
     loadMessages(); // Refresh messages
   };
@@ -131,7 +105,7 @@ export const ChatRoom = () => {
             ]}>
             <Text>{item.content}</Text>
             <View style={styles.iconStyle}>
-              {item.status === 'sent' ? <IcSent /> : <IcPending />}
+              {item.status === Status.SENT ? <IcSent /> : <IcPending />}
             </View>
           </View>
         )}

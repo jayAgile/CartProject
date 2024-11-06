@@ -1,6 +1,7 @@
 import {Platform} from 'react-native';
-import SQLite, {SQLiteDatabase} from 'react-native-sqlite-storage';
 import RNFS from 'react-native-fs';
+import SQLite, {SQLiteDatabase} from 'react-native-sqlite-storage';
+import {Status} from '../enum/common';
 
 // database instance
 let db: SQLiteDatabase | null = null;
@@ -82,4 +83,29 @@ export const createTables = async () => {
         FOREIGN KEY (chatId) REFERENCES chats(id)
       );`,
   );
+};
+
+export const checkAndSendPendingMessages = async () => {
+  const db = await openDatabase();
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'SELECT * FROM messages WHERE status = ?',
+        [Status.PENDING],
+        (txd, results) => {
+          const pendingMessages = results.rows.raw();
+
+          pendingMessages.forEach(async message => {
+            try {
+              // Attempt to send the message to the server
+              resolve(message);
+            } catch (error) {
+              reject('Failed to send message');
+            }
+          });
+        },
+        error => console.error('Error fetching pending messages:', error),
+      );
+    });
+  });
 };

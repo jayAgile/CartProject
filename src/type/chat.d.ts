@@ -6,3 +6,10 @@ interface Message {
   status: string;
   timestamp: string;
 }
+
+interface ChatItem {
+  id: number;
+  contactName: string;
+  lastMessage: string;
+  status: string;
+}
