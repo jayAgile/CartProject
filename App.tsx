@@ -32,11 +32,8 @@ function App(): React.JSX.Element {
 
   // Initialize the database
   const initializeDatabase = async () => {
-    try {
-      // await openDatabase(); // Ensure the database is created/opened
+    try {      
       await openDatabase(); // Ensure the database is created/opened
-      // await printDbLocation(); // Print the database location
-      // await createTables(); // Create tables
       await createTables(); // Create tables
     } catch (error) {
       console.log('Error initializing database:', error);
